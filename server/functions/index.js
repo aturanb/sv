@@ -9,11 +9,16 @@
 
 const {onRequest, onCall} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
+const {initializeApp} = require("firebase-admin/app");
+initializeApp();
+
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 
 exports.helloWorld = onCall((request) => {
+    const text = request.data.text;
   logger.info("Hello logs!", {structuredData: true});
-  return {result: "Hello Whatsipp"}
+  console.log(`Hello ${text}`)
+  return {result: `Hello ${text}`}
 });
