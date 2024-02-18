@@ -13,6 +13,11 @@ initializeApp();
 //Functions
 const getOpenAIResponse = require("./AIGeneration/getOpenAIResponse");
 const signUp = require("./Auth/signUp");
+const generateImage = require("./AIGeneration/generateImage");
 
+//AI
 exports.getOpenAIResponse = getOpenAIResponse.getOpenAIResponse;
+exports.generateImage = generateImage.generateImage;
+
+//AUTH
 exports.signUp = signUp.signUp;
