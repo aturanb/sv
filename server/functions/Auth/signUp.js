@@ -18,7 +18,7 @@ exports.signUp = onCall(async (request) => {
       disabled: userData.disabled || false,
     });
 
-    logger.info("Successfully created new user:", userRecord.uid);
+    
     return {
       result: `Successfully created new user: ${userRecord.uid}.`,
       createdUserID: userRecord.uid,

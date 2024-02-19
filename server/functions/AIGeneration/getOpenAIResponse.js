@@ -9,7 +9,7 @@ exports.getOpenAIResponse = onCall(
   async (request) => {
     try {
       const storyData = request.data.dataPassed;
-      const api = "";
+      const api = "sk-";
       console.log(api);
 
       // Construct the character descriptions

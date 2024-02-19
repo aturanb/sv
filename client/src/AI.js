@@ -68,6 +68,18 @@ function AI() {
       });
   };
 
+  const handleSaveStory = (e) => {
+    e.preventDefault();
+    const addStoryToFS = httpsCallable(functions, "addStoryToFS");
+    addStoryToFS({ storyData: openAIResponse, imageData: imageURL })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit}>
@@ -200,6 +212,7 @@ function AI() {
       </form>
       {openAIResponse && (
         <div>
+          <button onClick={handleSaveStory}>Save this Story</button>
           <h2>{openAIResponse.title}</h2>
           <p> {openAIResponse.content}</p>
           <h2>Prompts</h2>
