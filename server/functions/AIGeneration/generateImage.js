@@ -4,7 +4,7 @@ const { defineSecret } = require("firebase-functions/params");
 const openAISecretKey = defineSecret("OPENAI");
 const OpenAI = require("openai");
 const openai = new OpenAI({
-  apiKey: "sk-",
+  apiKey: "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",
 });
 
 exports.generateImage = onCall(async (request) => {

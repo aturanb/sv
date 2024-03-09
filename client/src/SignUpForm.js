@@ -4,7 +4,7 @@ import { httpsCallable } from "firebase/functions";
 
 function SignUpForm() {
   const signUpCloud = httpsCallable(functions, "signUp");
-  const testCloud = httpsCallable(functions, "test");
+  const testCloud = httpsCallable(functions, "upgradeMembership");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -98,7 +98,7 @@ function SignUpForm() {
         />
       </label>
       <button type="submit">Sign Up</button>
-      <button onClick={handleTest}>Tesst Auth</button>
+      {<button onClick={handleTest}>PAY</button>}
     </form>
   );
 }

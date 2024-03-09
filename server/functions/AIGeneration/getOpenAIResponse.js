@@ -9,7 +9,7 @@ exports.getOpenAIResponse = onCall(
   async (request) => {
     try {
       const storyData = request.data.dataPassed;
-      const api = "sk-";
+      const api = "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";
       console.log(api);
 
       // Construct the character descriptions
@@ -23,16 +23,24 @@ exports.getOpenAIResponse = onCall(
           role: "system",
           content: `Generate breathtaking stories based on user-provided information: child's name, child's age,
             child's gender, child's visual description, story theme, and other characters, and the story length.
-            Provides 3 detailed prompts for DALLE-3, including
-            character descriptions, for generating story-related images using AI. Provide your response
-            in JSON structure like this:
+            Additionally you need to provide 3 detailed prompts for DALLE-3 for generating story-related images using AI.
+            
+            Each prompt should follow this structure:
+            [image content/subject must include visual descriptions of the characters, description of action, state, and mood], 
+            [art form, style], 
+            [additional settings, such as lighting, colors, and framing]
+            
+            Note: All 3 prompts are going to be fed to AI image model seperately, so they are not connected.
+            Note: All 3 prompts needs to share the same [art form, style].
+            Note: All 3 prompts needs to contain visual descriptions of the characters.
+            Provide your response in JSON structure like this:
             {
                 "title": "<Title of the story>",
                 "content": "<story>",
                 "imgGenPrompts": {
-                    "prompt1": "<Prompt about the beginning of the story, describing the characters>",
-                    "prompt2": "<Prompt about the middle of the story, describing the characters>",
-                    "prompt3": "<Prompt about the end of the story, describing the characters>"
+                    "prompt1": "<Prompt about the beginning of the story>",
+                    "prompt2": "<Prompt about the middle of the story>",
+                    "prompt3": "<Prompt about the end of the story>"
                 }
             }`,
         },

@@ -1,8 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { functions } from "./config/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "./config/firebase";
 
 function AI() {
+  const [user, loading, error] = useAuthState(auth);
+  const [userData, setUserData] = useState([]);
+  const [imageArr, setImageArr] = useState([]);
+  const [storyID, setStoryID] = useState("");
+  const getUserData = httpsCallable(functions, "getUserData");
+
+  useEffect(() => {
+    if (user) {
+      getUserData()
+        .then((response) => {
+          console.log("UserData", response.data.userData);
+          setUserData(response.data.userData);
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        });
+    }
+  }, [user]);
+
   const [formData, setFormData] = useState({
     ChildName: "",
     ChildAge: 5,
@@ -48,30 +69,54 @@ function AI() {
     getAIresponse({ dataPassed: formData })
       .then((response) => {
         setOpenAIResponse(response.data.response);
-        console.log("OpenAI Response:", openAIResponse);
+        console.log("handleSubmit response:", response.data);
+        saveStory(response.data.response);
       })
       .catch((error) => {
         console.error("Error:", error);
       });
   };
 
-  const callToImageGen = (e, prompt) => {
+  const callToImageGen = (e, prompt, index) => {
     e.preventDefault();
     const generateImage = httpsCallable(functions, "generateImage");
     generateImage({ dataPassed: prompt })
       .then((response) => {
         console.log("Image URL:", response.data);
+        saveImage(response.data, index);
         setImageURL(response);
+        setImageArr((prevImageArr) => {
+          const updatedImageArr = [...prevImageArr]; // Create a copy of the previous state
+          updatedImageArr[index] = response.data; // Update the image URL at the specified index
+          return updatedImageArr; // Return the updated array
+        });
+        console.log(imageArr);
       })
       .catch((error) => {
         console.error("Error:", error);
       });
   };
 
-  const handleSaveStory = (e) => {
-    e.preventDefault();
-    const addStoryToFS = httpsCallable(functions, "addStoryToFS");
-    addStoryToFS({ storyData: openAIResponse, imageData: imageURL })
+  const saveStory = (content) => {
+    const addStoryToFS = httpsCallable(functions, "saveStory");
+    console.log("saving");
+    console.log(content);
+    addStoryToFS({ storyData: content })
+      .then((response) => {
+        console.log("Story ID: ", response.data);
+        setStoryID(response.data.storyRefID);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  //START HERE FIX IMAGE SAVING GIVEN INDEX
+  const saveImage = (url, index) => {
+    const addImageToFS = httpsCallable(functions, "saveImage");
+    console.log("saving image:");
+    console.log(url);
+    addImageToFS({ imgURL: url, storyRefID: storyID, imgIndex: index })
       .then((response) => {
         console.log(response);
       })
@@ -79,6 +124,22 @@ function AI() {
         console.error("Error:", error);
       });
   };
+
+  if (!user) {
+    return (
+      <>
+        <h1>You need an account to generate stories</h1>
+      </>
+    );
+  }
+
+  if (userData.membership === "free") {
+    return (
+      <>
+        <h1>You need a paid membership</h1>
+      </>
+    );
+  }
 
   return (
     <>
@@ -212,42 +273,30 @@ function AI() {
       </form>
       {openAIResponse && (
         <div>
-          <button onClick={handleSaveStory}>Save this Story</button>
+          <button onClick={saveImage}>Save Image</button>
           <h2>{openAIResponse.title}</h2>
           <p> {openAIResponse.content}</p>
+          <p> {storyID}</p>
+
           <h2>Prompts</h2>
-          <p> {openAIResponse.imgGenPrompts.prompt1}</p>
-          {imageURL && (
-            <div>
-              <img src={imageURL.data} alt={"image"} />
+          {Object.keys(openAIResponse.imgGenPrompts).map((key, index) => (
+            <div key={key}>
+              {imageArr[index] && (
+                <div>
+                  <img src={imageArr[index]} alt={"image"} />
+                </div>
+              )}
+              <p>{openAIResponse.imgGenPrompts[key]}</p>
+              <button
+                type="submit"
+                onClick={(e) =>
+                  callToImageGen(e, openAIResponse.imgGenPrompts[key], index)
+                }
+              >
+                Generate Image
+              </button>
             </div>
-          )}
-          <button
-            type="submit"
-            onClick={(e) =>
-              callToImageGen(e, openAIResponse.imgGenPrompts.prompt1)
-            }
-          >
-            Generate Image
-          </button>
-          <p> {openAIResponse.imgGenPrompts.prompt2}</p>
-          <button
-            type="submit"
-            onClick={(e) =>
-              callToImageGen(e, openAIResponse.imgGenPrompts.prompt2)
-            }
-          >
-            Generate Image
-          </button>
-          <p> {openAIResponse.imgGenPrompts.prompt3}</p>
-          <button
-            type="submit"
-            onClick={(e) =>
-              callToImageGen(e, openAIResponse.imgGenPrompts.prompt3)
-            }
-          >
-            Generate Image
-          </button>
+          ))}
         </div>
       )}
     </>
